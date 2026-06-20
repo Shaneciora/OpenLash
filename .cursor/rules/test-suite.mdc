@@ -1,0 +1,48 @@
+---
+description: Run and maintain the full test suite after code changes
+alwaysApply: true
+---
+
+# Test suite
+
+## Before finishing any task
+
+After making code changes, run the **full** test suite and fix failures before ending the turn:
+
+```bash
+cd /Users/shaneciora/Projects/OpenLash && npm run test:ci
+```
+
+`test:ci` runs unit/integration (`vitest`) and E2E (`playwright`) **in parallel**. Vitest parallelizes test files; Playwright runs E2E spec files in parallel workers (each test creates its own room). Do not skip E2E unless the user explicitly asks for a faster check only.
+
+Skip when the task was read-only (questions, reviews with no edits) or when no project files were changed.
+
+If tests fail, diagnose and fix the code or tests—do not report done with a red suite.
+
+## After tests pass
+
+If you changed application code, config, or assets and `test:ci` is green, rebuild Docker before ending the turn (see `docker-rebuild` rule). The container does not auto-reload edits.
+
+```bash
+cd /Users/shaneciora/Projects/OpenLash && npm run docker:up
+```
+
+## When building or changing features
+
+Update tests in the same task when behavior changes. Do not leave coverage gaps.
+
+| Area | Where to add/update tests |
+|------|---------------------------|
+| Game engine, pairing, scoring | `tests/unit/`, `tests/integration/` |
+| Full game loop headlessly | `tests/helpers/GameDriver.ts`, `tests/integration/full-game.test.ts` |
+| Host/play UI flows | `tests/e2e/`, `tests/helpers/e2eFlow.ts` |
+| Socket/API behavior | `tests/integration/` |
+
+Guidelines:
+
+- **New feature or bug fix** → add or adjust a test that would have caught the bug.
+- **Changed game phases or transitions** → extend `GameDriver` and/or `full-game.spec.ts`.
+- **Bot fill, battles, voting, reveals** → cover with `GameDriver` `{ botFill: true }` in integration tests and the bot-fill E2E spec (`bot-fill-vote.spec.ts`). Do not duplicate full bot-fill game loops in both integration and E2E.
+- **UI-only polish** with no behavior change → tests optional unless E2E selectors or flows shift.
+
+Prefer extending existing helpers (`GameDriver`, `e2eFlow`) over duplicating setup in each test file. Avoid overlapping tests across layers—each layer should add distinct value (engine logic in unit/integration, UI wiring in E2E).

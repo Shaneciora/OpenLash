@@ -1,0 +1,27 @@
+services:
+  openlash:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATA_DIR=/app/data
+      - PUBLIC_HOST=${PUBLIC_HOST:-}
+      - NGROK_API_URL=http://ngrok:4040
+    depends_on:
+      - ngrok
+
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    volumes:
+      - ./scripts/ngrok-entrypoint.sh:/entrypoint.sh:ro
+      - ./config/ngrok.yml:/etc/ngrok/ngrok.yml:ro
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+    ports:
+      - "4040:4040"

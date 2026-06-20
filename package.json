@@ -1,0 +1,46 @@
+{
+  "name": "openlash",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server/index.ts",
+    "build": "vite build && tsc -p tsconfig.server.json",
+    "start": "node dist/server/index.js",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit src/game",
+    "test:integration": "vitest run tests/integration",
+    "test:e2e": "playwright test",
+    "test:ci": "npm test & npm run test:e2e & wait",
+    "db:seed": "tsx src/db/seed.ts",
+    "docker:env": "bash scripts/write-docker-env.sh",
+    "docker:up": "PUBLIC_HOST=\"$(bash scripts/write-docker-env.sh)\" docker compose up --build -d"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.1",
+    "hono": "^4.7.8",
+    "howler": "^2.2.4",
+    "jsqr": "^1.4.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.5.2",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "zod": "^3.24.3"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/howler": "^2.2.12",
+    "@types/node": "^22.15.3",
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
+    "@vitest/coverage-v8": "^3.1.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.3",
+    "vitest": "^3.1.2"
+  }
+}

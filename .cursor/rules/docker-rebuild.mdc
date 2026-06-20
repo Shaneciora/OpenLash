@@ -1,0 +1,35 @@
+---
+description: Rebuild Docker after tests pass (no hot reload in container)
+alwaysApply: true
+---
+
+# Docker rebuild
+
+Docker does **not** hot-reload code changes. After editing app code, config, or assets, rebuild the image so the running container serves the latest build.
+
+## When to rebuild
+
+Rebuild **only at the end of a task**, and **only if**:
+
+1. Project files were changed (not read-only Q&A or review), and
+2. `npm run test:ci` completed with **all tests passing**.
+
+Do **not** rebuild if tests failed—fix failures first, re-run tests, then rebuild.
+
+## Command
+
+Run this as the **last step** before ending the turn (after a green `test:ci`):
+
+```bash
+cd /Users/shaneciora/Projects/OpenLash && npm run docker:up
+```
+
+`docker:up` detects the current LAN IP for Docker when needed, then rebuilds and starts the container.
+
+## Skip when
+
+- Read-only task (no file edits)
+- Tests did not pass
+- Changes are docs-only with no runtime impact (optional skip)
+
+If the rebuild fails, report the error; do not claim the task is done.
