@@ -19,12 +19,29 @@ export function HostScoreboard({ state, lastLash, reducedMotion }: Props) {
     .sort((a, b) => b.score - a.score);
 
   const maxScore = Math.max(...sorted.map((p) => p.score), 1);
+  // Past 10 players a column per player no longer fits, so it becomes a two-column leaderboard.
+  const listLayout = sorted.length > 10;
+  const rowStagger = listLayout ? 0.06 : 0.12;
+  // A big game shows only its best Last Lash answers, so all ranked rows keep their height.
+  const lashEntries = listLayout
+    ? state.lastLashEntries
+        .filter((e) => e.answer?.text)
+        .sort((a, b) => b.votes - a.votes || b.points - a.points)
+        .slice(0, 5)
+    : state.lastLashEntries;
 
   return (
     <div
       data-testid="scoreboard"
-      className={`host-scoreboard${reducedMotion ? " host-scoreboard--instant" : ""}`}
-      style={{ "--player-count": sorted.length } as CSSProperties}
+      className={`host-scoreboard${listLayout ? " host-scoreboard--list" : ""}${
+        reducedMotion ? " host-scoreboard--instant" : ""
+      }`}
+      style={
+        {
+          "--player-count": sorted.length,
+          "--list-rows": Math.ceil(sorted.length / 2),
+        } as CSSProperties
+      }
     >
       <h1 className="host-scoreboard-title">
         {lastLash ? "Final Results" : `Round ${state.round} Scores`}
@@ -39,11 +56,12 @@ export function HostScoreboard({ state, lastLash, reducedMotion }: Props) {
               className="host-scoreboard-column"
               style={
                 {
-                  "--row-delay": `${i * 0.12}s`,
+                  "--row-delay": `${i * rowStagger}s`,
                   "--bar-target": `${pct}%`,
                 } as CSSProperties
               }
             >
+              {listLayout && <span className="host-scoreboard-rank">{i + 1}</span>}
               <span className="host-scoreboard-score">{p.score.toLocaleString()}</span>
               <div className="host-scoreboard-bar-track">
                 <div
@@ -64,9 +82,10 @@ export function HostScoreboard({ state, lastLash, reducedMotion }: Props) {
           );
         })}
       </ol>
-      {lastLash && state.lastLashEntries.length > 0 && (
+      {lastLash && lashEntries.length > 0 && (
         <div className="host-scoreboard-lash">
-          {state.lastLashEntries.map((e) => {
+          {listLayout && <h2 className="host-scoreboard-lash-heading">Top Last Lash answers</h2>}
+          {lashEntries.map((e) => {
             const player = state.players.find((pl) => pl.id === e.playerId);
             return (
               <div key={e.playerId}>

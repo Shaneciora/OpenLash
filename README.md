@@ -64,6 +64,7 @@ The host picks one of two final modes in settings:
 ## Features
 
 - **Real-time multiplayer** over WebSockets (Socket.IO)
+- **Up to 20 players** — 3–20 per game (default 20, set **Max players** in host settings); anyone past the limit joins as audience. Big games switch to a two-row answer screen and a two-column leaderboard
 - **Custom prompt collections** — create, edit, and import prompt packs at `/collections`
 - **Built-in prompt pack** seeded on first run
 - **Bot fill** — test modes that fill the lobby with AI bots for solo development
@@ -231,6 +232,12 @@ npm run test:ci           # Full CI suite (Vitest + Playwright in parallel)
 ```
 
 E2E tests start their own server on port **3099** with `E2E_MODE=1` for faster timers.
+
+A visual smoke test plays four full 20-player games (TV and laptop sizes, both final modes) and screenshots every screen. It is opt-in because it takes ~4 minutes:
+
+```bash
+SMOKE_20=1 SMOKE_DIR=./smoke-shots npx playwright test smoke-20
+```
 
 ## API Overview
 

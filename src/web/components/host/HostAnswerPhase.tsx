@@ -54,6 +54,8 @@ export function HostAnswerPhase({ state, reducedMotion = false }: Props) {
     (p) => !p.isAudience && !p.kicked && p.connected
   );
   const doneCount = writers.filter((p) => playerHasSubmittedAnswers(state, p.id)).length;
+  // Big lobbies wrap onto two rows; every size in the strip is computed per column.
+  const columns = writers.length > 10 ? Math.ceil(writers.length / 2) : writers.length;
 
   const title =
     state.phase === "final_answer"
@@ -64,7 +66,7 @@ export function HostAnswerPhase({ state, reducedMotion = false }: Props) {
     <div
       className="host-answer-phase"
       data-testid="host-answer-phase"
-      style={{ "--answer-player-count": writers.length } as CSSProperties}
+      style={{ "--answer-player-count": columns } as CSSProperties}
     >
       <header className="host-answer-header">
         <h1 className="host-answer-title" data-testid="phase-indicator">

@@ -38,7 +38,7 @@ export interface GameSettings {
 
 export const DEFAULT_SETTINGS: GameSettings = {
   audienceEnabled: true,
-  maxPlayers: 8,
+  maxPlayers: 20,
   minPlayers: 3,
   password: null,
   moderationEnabled: false,

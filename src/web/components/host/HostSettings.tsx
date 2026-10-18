@@ -59,6 +59,10 @@ export function HostSettings({ state, onUpdate }: Props) {
   if (state.phase !== "lobby") return null;
 
   const s = state.settings;
+  const joinedPlayers = state.players.filter((p) => !p.isAudience && !p.kicked).length;
+  const maxPlayerOptions = Array.from({ length: 18 }, (_, i) => i + 3).filter(
+    (n) => n >= joinedPlayers
+  );
 
   const patch = (p: SettingsPatch) => onUpdate(p);
 
@@ -129,6 +133,22 @@ export function HostSettings({ state, onUpdate }: Props) {
         >
           <option value="thriplash">Thriplash</option>
           <option value="last_lash">Last Lash</option>
+        </select>
+        <label className="host-field-label" htmlFor="max-players">
+          Max players
+        </label>
+        <select
+          id="max-players"
+          className="ui-select"
+          data-testid="max-players-select"
+          value={s.maxPlayers}
+          onChange={(e) => patch({ maxPlayers: Number(e.target.value) })}
+        >
+          {maxPlayerOptions.map((n) => (
+            <option key={n} value={n}>
+              {n}
+            </option>
+          ))}
         </select>
       </div>
 

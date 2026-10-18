@@ -8,7 +8,7 @@ import { DEFAULT_SETTINGS } from "../../src/shared/types.js";
 
 describe("getBotFillTargetCount", () => {
   it("returns max players when bot fill is disabled", () => {
-    expect(getBotFillTargetCount(DEFAULT_SETTINGS)).toBe(8);
+    expect(getBotFillTargetCount(DEFAULT_SETTINGS)).toBe(DEFAULT_SETTINGS.maxPlayers);
     expect(isBotFillEnabled(DEFAULT_SETTINGS)).toBe(false);
   });
 

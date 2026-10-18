@@ -9,6 +9,7 @@ import type { PublicRoomState } from "../../shared/types";
 import { HostLobby } from "../components/host/HostLobby";
 import { HostSettings } from "../components/host/HostSettings";
 import { HostBattleVote, HostBattleReveal } from "../components/host/HostBattle";
+import { HostLastLashVote } from "../components/host/HostLastLashVote";
 import { HostAnswerPhase } from "../components/host/HostAnswerPhase";
 import { HostScoreboard } from "../components/host/HostScoreboard";
 import { HostPodium } from "../components/host/HostPodium";
@@ -97,6 +98,10 @@ function renderHostPhase(
 
   if (state.phase === "final_vote" && state.settings.finalRoundMode === "thriplash") {
     return <HostBattleVote state={state} thriplash />;
+  }
+
+  if (state.phase === "final_vote" && state.settings.finalRoundMode === "last_lash") {
+    return <HostLastLashVote state={state} />;
   }
 
   if (state.phase === "final_vote_reveal") {
