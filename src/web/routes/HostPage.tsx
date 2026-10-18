@@ -261,6 +261,11 @@ export function HostPage() {
         </div>
       ) : (
         <>
+          {codeRevealed && (
+            <div className="host-room-badge" data-testid="host-room-badge">
+              Room <strong>{state.code}</strong>
+            </div>
+          )}
           <HostGameScale scale={hostScale}>
             <div className="host-ui" data-testid="host-screen">
               {phaseContent}
