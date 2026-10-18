@@ -57,11 +57,12 @@ export async function submitPendingAnswers(page: Page, label = "E2E answer") {
 
   const submit = (await activeLayerLocator(page, "submit-answers-btn")).last();
   if (!(await submit.isVisible().catch(() => false))) return false;
-  if (!(await submit.isEnabled().catch(() => false))) return false;
 
+  // Fill first: a single-prompt Submit stays disabled until its box has text.
   for (let i = 0; i < inputCount; i++) {
     await inputs.nth(i).fill(`${label}-${i}`);
   }
+  if (!(await submit.isEnabled().catch(() => false))) return false;
   await submit.click();
   await page.waitForTimeout(150);
   return true;
