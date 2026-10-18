@@ -156,4 +156,55 @@ describe("player reconnect socket integration", () => {
     carol.disconnect();
     fresh.disconnect();
   }, 15000);
+
+  it("mid-game, rejoining with the same name and no token reclaims the player, and the old socket dropping later doesn't mark them gone", async () => {
+    const connected = (socket: Socket) =>
+      new Promise<void>((r, j) => {
+        socket.on("connect", () => r());
+        socket.on("connect_error", j);
+      });
+    const host = client();
+    await connected(host);
+    const created = await emitAck<{ state: PublicRoomState }>(host, clientEvents.CREATE_ROOM, {});
+    const code = created.state.code;
+
+    const alice = client();
+    const bob = client();
+    const carol = client();
+    await Promise.all([alice, bob, carol].map(connected));
+    const aliceJoin = await emitAck<{ player: { id: string; token: string } }>(
+      alice,
+      clientEvents.JOIN_ROOM,
+      { code, name: "Alice" }
+    );
+    await emitAck(bob, clientEvents.JOIN_ROOM, { code, name: "Bob" });
+    await emitAck(carol, clientEvents.JOIN_ROOM, { code, name: "Carol" });
+
+    const room = getRoom(code)!;
+    room.phase = "round1_answer";
+    room.round = 1;
+    room.players.find((p) => p.id === aliceJoin.player.id)!.score = 777;
+    setRoom(room);
+
+    // New tab / cleared phone: no token, same name, while the old socket is still open.
+    const fresh = client();
+    await connected(fresh);
+    const again = await emitAck<{ player: { id: string; token: string; isAudience: boolean; score: number } }>(
+      fresh,
+      clientEvents.JOIN_ROOM,
+      { code, name: "alice" }
+    );
+    expect(again.player.id).toBe(aliceJoin.player.id);
+    expect(again.player.token).toBe(aliceJoin.player.token);
+    expect(again.player.isAudience).toBe(false);
+    expect(again.player.score).toBe(777);
+
+    alice.disconnect();
+    await new Promise((r) => setTimeout(r, 200));
+    const after = getRoom(code)!;
+    expect(after.players.find((p) => p.id === aliceJoin.player.id)?.connected).toBe(true);
+    expect(after.players.filter((p) => p.name.toLowerCase() === "alice")).toHaveLength(1);
+
+    for (const s of [host, bob, carol, fresh]) s.disconnect();
+  }, 15000);
 });

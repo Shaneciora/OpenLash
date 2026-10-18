@@ -35,6 +35,61 @@ const prompts: Prompt[] = Array.from({ length: 20 }, (_, i) => ({
   usCentric: false,
 }));
 
+describe("rejoin by name", () => {
+  function startedRoom() {
+    const room = createRoom("http://localhost/play");
+    const alice = joinRoom(room, "Alice", undefined, undefined, null).player;
+    joinRoom(room, "Bob", undefined, undefined, null);
+    joinRoom(room, "Carol", undefined, undefined, null);
+    startGame(room, prompts);
+    return { room, alice };
+  }
+
+  it("mid-game, a dropped player rejoining with the same name and no token gets their player back", () => {
+    const { room, alice } = startedRoom();
+    alice.score = 1234;
+    alice.connected = false;
+    const r = joinRoom(room, "  alice ", undefined, undefined, null);
+    expect(r.error).toBeUndefined();
+    expect(r.player.id).toBe(alice.id);
+    expect(r.player.token).toBe(alice.token);
+    expect(r.player.isAudience).toBe(false);
+    expect(r.player.score).toBe(1234);
+    expect(r.player.connected).toBe(true);
+    expect(room.players.filter((p) => !isBot(p.id))).toHaveLength(3);
+  });
+
+  it("mid-game, a same-name join takes the player back even before the old phone times out", () => {
+    const { room, alice } = startedRoom();
+    const r = joinRoom(room, "Alice", "some-other-token", undefined, null);
+    expect(r.player.id).toBe(alice.id);
+    expect(room.players.filter((p) => !isBot(p.id))).toHaveLength(3);
+  });
+
+  it("in the lobby, a second person with a connected player's name stays a separate player", () => {
+    const room = createRoom("http://localhost/play");
+    const first = joinRoom(room, "Mike", undefined, undefined, null).player;
+    const second = joinRoom(room, "Mike", undefined, undefined, null).player;
+    expect(second.id).not.toBe(first.id);
+  });
+
+  it("in the lobby, a disconnected player rejoining by name gets their slot back", () => {
+    const room = createRoom("http://localhost/play");
+    const first = joinRoom(room, "Mike", undefined, undefined, null).player;
+    first.connected = false;
+    const again = joinRoom(room, "Mike", undefined, undefined, null).player;
+    expect(again.id).toBe(first.id);
+    expect(room.players).toHaveLength(1);
+  });
+
+  it("a kicked player cannot reclaim their spot by name", () => {
+    const { room, alice } = startedRoom();
+    kickPlayer(room, alice.id);
+    const r = joinRoom(room, "Alice", undefined, undefined, null);
+    expect(r.player?.id).not.toBe(alice.id);
+  });
+});
+
 describe("engine", () => {
   it("creates lobby and joins players", () => {
     const room = createRoom("http://localhost/play");

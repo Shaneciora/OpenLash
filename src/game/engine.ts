@@ -186,9 +186,17 @@ export function joinRoom(
     return { player: null as unknown as Player, error: "You were kicked from this room" };
   }
 
-  const existing = token
-    ? room.players.find((p) => p.token === token)
-    : undefined;
+  const gameStarted = room.phase !== "lobby";
+  const sameName = (p: Player) =>
+    p.name.trim().toLowerCase() === name.trim().toLowerCase();
+  // A dropped phone often comes back without its token (new tab, cleared storage), so a
+  // matching name reclaims the player. In the lobby only a disconnected player can be
+  // reclaimed, so two different people with the same name stay separate.
+  const existing =
+    (token ? room.players.find((p) => p.token === token) : undefined) ??
+    room.players.find(
+      (p) => sameName(p) && !p.kicked && !isBot(p.id) && (gameStarted || !p.connected)
+    );
 
   if (existing) {
     existing.connected = true;
@@ -198,7 +206,6 @@ export function joinRoom(
   }
 
   const activePlayers = room.players.filter((p) => !p.isAudience && !p.kicked);
-  const gameStarted = room.phase !== "lobby";
   const isAudience =
     forceAudience ||
     gameStarted ||

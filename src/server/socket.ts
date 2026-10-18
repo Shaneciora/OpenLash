@@ -56,6 +56,7 @@ interface ModQueueItem {
 }
 
 const modQueues = new Map<string, ModQueueItem[]>();
+const latestSocketByPlayer = new Map<string, string>();
 
 function isUnreachableJoinUrl(url: string): boolean {
   return !isUsablePlayBase(url);
@@ -277,6 +278,7 @@ export function setupSocket(httpServer: HttpServer, port: number) {
       }
 
       playerId = result.player.id;
+      latestSocketByPlayer.set(playerId, socket.id);
       socket.join(room.code);
       currentRoom = room.code;
       isHostDisplay = false;
@@ -477,6 +479,9 @@ export function setupSocket(httpServer: HttpServer, port: number) {
       }
 
       if (!currentRoom || !playerId) return;
+      // A player who already rejoined on a newer socket stays connected when the old one drops.
+      if (latestSocketByPlayer.get(playerId) !== socket.id) return;
+      latestSocketByPlayer.delete(playerId);
       const room = getRoom(currentRoom);
       if (!room) return;
       const player = room.players.find((p) => p.id === playerId);
