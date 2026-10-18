@@ -4,7 +4,7 @@ export const MAX_ANSWER_LENGTH = 60;
 export const MAX_PROMPT_LENGTH = 120;
 export const MAX_NAME_LENGTH = 16;
 
-export const ANSWER_TIMER_MS = 40_000;
+export const ANSWER_TIMER_MS = 90_000;
 export const VOTE_TIMER_MS = 20_000;
 export const E2E_ANSWER_TIMER_MS = 5_000;
 export const E2E_VOTE_TIMER_MS = 3_000;
